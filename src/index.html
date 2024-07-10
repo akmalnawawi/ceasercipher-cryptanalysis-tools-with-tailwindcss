@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="./output.css" rel="stylesheet">
+  <title>Cryptanalysis Tool</title>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+  <div class="max-w-lg mx-auto bg-white p-4 md:p-8 rounded shadow">
+    <h1 class="text-center text-xl sm:text-2xl md:text-3xl font-bold mb-4 md:mb-6">Text Cryptanalysis Tool</h1>
+    <div id="inputOutputContainer">
+      <div class="input-output-group mb-4">
+        <label for="textInput" class="block text-sm sm:text-lg mb-2">Enter the plaintext or ciphertext:</label>
+        <input type="text" id="textInput" class="w-full p-2 border border-gray-300 rounded mb-4">
+        <div class="flex flex-wrap mb-4">
+          <button class="bg-blue-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(1)">Encrypt</button>
+          <button class="bg-green-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(2)">Decrypt</button>
+          <button class="bg-yellow-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(3)">Count Single Characters</button>
+          <button class="bg-purple-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(4)">Count Diagrams</button>
+          <button class="bg-pink-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(5)">Count Trigrams</button>
+          <button class="bg-red-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(6)">Reset</button>
+          <button class="bg-gray-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="removeSpaces()">Remove Whitespace</button>
+        </div>
+        <label for="output" class="block text-sm sm:text-lg mb-2">Output:</label>
+        <textarea id="output" rows="10" class="w-full h-48 p-2 border border-gray-300 rounded" readonly></textarea>
+      </div>
+      <div class="flex flex-wrap mb-4">
+        <button class="bg-indigo-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="newSubstitution()">New Substitution</button>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import { sanitizeInput, customEncrypt, customDecrypt, countSingleCharacters, countDiagrams, countTrigrams } from './ver4.js';
+
+    window.performAction = (option, inputId = 'textInput', outputId = 'output') => {
+      const textInput = document.getElementById(inputId);
+      const output = document.getElementById(outputId);
+
+      if (option === 6) {
+        // Clear input and output fields
+        textInput.value = '';
+        output.value = "Textbox has been cleared";
+        return;
+      }
+
+      const sanitizedText = sanitizeInput(textInput.value);
+      let result;
+
+      switch (option) {
+        case 1:
+          result = customEncrypt(sanitizedText, 3).encrypt(0);
+          break;
+        case 2:
+          result = customDecrypt(sanitizedText, 3).decrypt(0);
+          break;
+        case 3:
+          result = countSingleCharacters(sanitizedText);
+          break;
+        case 4:
+          result = countDiagrams(sanitizedText);
+          break;
+        case 5:
+          result = countTrigrams(sanitizedText);
+          break;
+        default:
+          result = 'Invalid option. Please select between 1 and 5.';
+      }
+
+      output.value = result;
+    }
+
+    window.removeSpaces = (inputId = 'textInput') => {
+      const textInput = document.getElementById(inputId);
+      textInput.value = textInput.value.replace(/[ \t]+/g, '');
+    }
+
+    window.newSubstitution = () => {
+      const container = document.getElementById('inputOutputContainer');
+      const newGroup = document.createElement('div');
+      const newInputId = `textInput-${container.children.length + 1}`;
+      const newOutputId = `output-${container.children.length + 1}`;
+      newGroup.className = 'input-output-group mb-4';
+      newGroup.innerHTML = `
+        <hr class="h-1 bg-neutral-950 my-4">
+        <label for="${newInputId}" class="block text-sm sm:text-lg mb-2">Enter new plaintext or ciphertext:</label>
+        <input type="text" id="${newInputId}" class="w-full p-2 border border-gray-300 rounded mb-4">
+        <div class="flex flex-wrap mb-4">
+          <button class="bg-blue-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(1, '${newInputId}', '${newOutputId}')">Encrypt</button>
+          <button class="bg-green-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(2, '${newInputId}', '${newOutputId}')">Decrypt</button>
+          <button class="bg-yellow-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(3, '${newInputId}', '${newOutputId}')">Count Single Characters</button>
+          <button class="bg-purple-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(4, '${newInputId}', '${newOutputId}')">Count Diagrams</button>
+          <button class="bg-pink-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(5, '${newInputId}', '${newOutputId}')">Count Trigrams</button>
+          <button class="bg-red-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="performAction(6, '${newInputId}', '${newOutputId}')">Reset</button>
+          <button class="bg-gray-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="removeSpaces('${newInputId}')">Remove Whitespace</button>
+        </div>
+        <label for="${newOutputId}" class="block text-sm sm:text-lg mb-2">Output:</label>
+        <textarea id="${newOutputId}" rows="10" class="w-full p-2 border border-gray-300 rounded" readonly></textarea>
+        <div class="flex flex-wrap mb-4">
+            <button class="bg-indigo-500 text-white text-sm sm:text-base flex-grow px-4 py-2 rounded m-1" onclick="newSubstitution()">New Substitution</button>
+        </div>
+      `;
+      container.appendChild(newGroup);
+    }
+  </script>
+</body>
+</html>
